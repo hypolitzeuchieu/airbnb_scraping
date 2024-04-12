@@ -34,6 +34,21 @@ class AirbnbScraper:
             self.logger.warning(f"something went wront to fetch the content from url:{e}")
             return 0
 
+    def get_next_page_button(self, url: str) -> bool:
+        self.driver.get(url)
+        try:
+            while True:
+                next_button = self.driver.find_element(By.CSS_SELECTOR, ".c1ytbx3a")
+
+                if next_button.get_attribute("aria-disabled") == "true":
+                    print("it's the last page")
+                    break
+
+                next_button.click()
+        except Exception as e:
+            self.logger.error(f" next button click error:{e}")
+            return False
+
     def close(self):
         self.driver.quit()
 
@@ -43,4 +58,4 @@ if __name__ == "__main__":
     scraper = AirbnbScraper()
     price1 = scraper.get_average_price(url)
     print(price1)
-    # scraper.close()
+    scraper.close()

@@ -1,3 +1,6 @@
+import time
+import random
+
 from selenium import webdriver
 import re
 import logging
@@ -27,6 +30,7 @@ class AirbnbScraper:
                     price_digit = re.sub(r'\D', '', last_price.text)
                     if price_digit.isdigit():
                         price_list.append(int(price_digit))
+                        time.sleep(random.uniform(8, 10))
                 average = sum(price_list) / len(price_list) if len(price_list) else 0
                 return average
 
@@ -36,6 +40,7 @@ class AirbnbScraper:
 
     def get_next_page_button(self, url: str) -> bool:
         self.driver.get(url)
+        page_number = 1
         try:
             while True:
                 next_button = self.driver.find_element(By.CSS_SELECTOR, ".c1ytbx3a")
@@ -44,7 +49,12 @@ class AirbnbScraper:
                     print("it's the last page")
                     break
 
+                page_number += 1
                 next_button.click()
+                time.sleep(random.uniform(3, 7))
+                print(page_number)
+                # return True
+
         except Exception as e:
             self.logger.error(f" next button click error:{e}")
             return False
@@ -54,8 +64,8 @@ class AirbnbScraper:
 
 
 if __name__ == "__main__":
-    url = "https://fr.airbnb.com/s/Rio-de-Janeiro--Rio-de-Janeiro--Br%C3%A9sil/homes?tab_id=home_tab&refinement_paths%5B%5D=%2Fhomes&flexible_trip_lengths%5B%5D=one_week&monthly_start_date=2024-05-01&monthly_length=3&monthly_end_date=2024-08-01&price_filter_input_type=0&channel=EXPLORE&query=Rio%20de%20Janeiro%2C%20Br%C3%A9sil&date_picker_type=calendar&checkin=2024-04-28&checkout=2024-05-26&source=structured_search_input_header&search_type=filter_change&price_filter_num_nights=28&place_id=ChIJW6AIkVXemwARTtIvZ2xC3FA&search_mode=regular_search&adults=2"
+    url = "https://fr.airbnb.com/s/Rio-de-Janeiro--Rio-de-Janeiro--Br%C3%A9sil/homes?tab_id=home_tab&refinement_paths%5B%5D=%2Fhomes&flexible_trip_lengths%5B%5D=one_week&monthly_start_date=2024-05-01&monthly_length=3&monthly_end_date=2024-08-01&price_filter_input_type=0&channel=EXPLORE&query=Rio%20de%20Janeiro%2C%20Br%C3%A9sil&date_picker_type=calendar&checkin=2024-04-28&checkout=2024-05-26&source=structured_search_input_header&search_type=filter_change&price_filter_num_nights=28&place_id=ChIJW6AIkVXemwARTtIvZ2xC3FA&search_mode=regular_search&adults=2&children=1"
     scraper = AirbnbScraper()
-    price1 = scraper.get_average_price(url)
+    price1 = scraper.get_next_page_button(url)
     print(price1)
-    scraper.close()
+    # scraper.close()

@@ -7,6 +7,8 @@ import logging
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class AirbnbScraper:
@@ -43,7 +45,10 @@ class AirbnbScraper:
         page_number = 1
         try:
             while True:
-                next_button = self.driver.find_element(By.CSS_SELECTOR, ".c1ytbx3a")
+                print(f"we are on page:{page_number}")
+                next_button = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".c1ytbx3a"))
+                )
 
                 if next_button.get_attribute("aria-disabled") == "true":
                     print("it's the last page")
@@ -52,8 +57,6 @@ class AirbnbScraper:
                 page_number += 1
                 next_button.click()
                 time.sleep(random.uniform(3, 7))
-                print(page_number)
-                # return True
 
         except Exception as e:
             self.logger.error(f" next button click error:{e}")
@@ -68,4 +71,4 @@ if __name__ == "__main__":
     scraper = AirbnbScraper()
     price1 = scraper.get_next_page_button(url)
     print(price1)
-    # scraper.close()
+    scraper.close()

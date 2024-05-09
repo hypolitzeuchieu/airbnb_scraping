@@ -4,9 +4,11 @@ import random
 from selenium import webdriver
 import re
 import logging
+
+from selenium.webdriver import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -36,13 +38,13 @@ class AirbnbScraper:
                         if price_digit.isdigit():
                             price_list.append(float(price_digit))
                 except (NoSuchElementException, AttributeError):
-                    self.logger.warning(f"Error extracting price from element:{price}")
+                    self.logger.warning(f"Error extracting price from element:{url}")
 
                 average = float(sum(price_list) / len(price_list)) if len(price_list) else 0
                 return average
 
         except (NoSuchElementException, AttributeError) as e:
-            self.logger.warning(f"something went wront to fetch the content on {url}:{e}")
+            self.logger.warning(f"something went wrong to fetch the content on {url}:{e}")
             return 0
 
     def get_next_page_button(self, url: str) -> bool:
@@ -63,9 +65,42 @@ class AirbnbScraper:
                 next_button.click()
                 time.sleep(random.uniform(3, 7))
 
+        except NoSuchElementException:
+            print("No button on this page")
+            return False
+
         except Exception as e:
             self.logger.error(f" next button click error:{e}")
             return False
+
+    def get_holiday_country(self, url: str, country_name: str):
+        self.driver.get(url)
+        wait = WebDriverWait(self.driver, 10)
+        try:
+            # to close pub
+            button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[aria-label='Fermer']")))
+            button.click()
+        except NoSuchElementException:
+            print('Close button cookies not found')
+        except TimeoutException:
+            print("Close cookies button doesn't exist on page  ")
+
+        country_input = self.driver.find_element(By.ID, "bigsearch-query-location-input")
+        country_input.clear()
+        country_input.send_keys(country_name)
+        first_suggestion = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.smfh8a4")))
+
+        # country_input.send_keys(Keys.ENTER)
+
+        first_suggestion.click()
+
+        return country_input.text
+
+    def get_dates(self):
+        pass
+
+    def get_travelers_number(self):
+        pass
 
     def close(self):
         self.driver.quit()
@@ -74,6 +109,6 @@ class AirbnbScraper:
 if __name__ == "__main__":
     url1 = "https://fr.airbnb.com/"
     scraper = AirbnbScraper()
-    price1 = scraper.get_average_price(url1)
+    price1 = scraper.get_holiday_country(url1, "pari")
     print(price1)
-    scraper.close()
+    # scraper.close()

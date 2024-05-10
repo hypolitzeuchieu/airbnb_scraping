@@ -5,7 +5,6 @@ from selenium import webdriver
 import re
 import logging
 
-from selenium.webdriver import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -88,19 +87,33 @@ class AirbnbScraper:
         country_input = self.driver.find_element(By.ID, "bigsearch-query-location-input")
         country_input.clear()
         country_input.send_keys(country_name)
+
         first_suggestion = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.smfh8a4")))
-
-        # country_input.send_keys(Keys.ENTER)
-
         first_suggestion.click()
 
-        return country_input.text
+        month = self.driver.find_element(By.ID, "tab--tabs--1")
+        month.click()
 
-    def get_dates(self):
-        pass
+        element = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "d1u68d5p")))
+        element.click()
 
-    def get_travelers_number(self):
-        pass
+        travelers = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,
+                                                           '[data-testid="structured-search-input-field-guests-button"]')))
+        travelers.click()
+        # button to add travelers
+        adults = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,
+                                                        '[data-testid="stepper-adults-increase-button"]')))
+        adults.click()
+        adults.click()
+
+        childs = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,
+                                                        '[data-testid="stepper-children-increase-button"]')))
+        childs.click()
+
+        search_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,
+                                                               '[data-testid="structured-search-input-search-button"]')))
+        search_button.click()
+        return search_button
 
     def close(self):
         self.driver.quit()
@@ -110,5 +123,5 @@ if __name__ == "__main__":
     url1 = "https://fr.airbnb.com/"
     scraper = AirbnbScraper()
     price1 = scraper.get_holiday_country(url1, "pari")
-    print(price1)
+    price2 = scraper.get_average_price(price1)
     # scraper.close()
